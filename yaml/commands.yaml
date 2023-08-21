@@ -1,0 +1,163 @@
+#будем тут прописывать команды? action= break, exit, start
+com0:
+  keyword:
+  - параметры
+  - настройки
+  path: no
+  ahkFile: setting.ahk
+  sound: loading
+  action: break
+com1:
+  keyword:
+  - перезагрузка
+  - перезагрузил
+  path: no
+  ahkFile: reboot.ahk
+  sound: ok
+  action: exit
+com2:
+  keyword:
+  - спать
+  - не слушай
+  - хватит
+  path: no
+  ahkFile: no
+  sound: ok
+  action: break
+com3:
+  keyword:
+  - вырубайся
+  - заверши работу
+  path: no
+  ahkFile: False
+  sound: ok
+  action: exit 
+com4:
+  keyword:
+  - выключи компьютер
+  - отключай компьютер
+  path: no
+  ahkFile: of.ahk
+  sound: ok
+  action: exit
+com5:
+  keyword:
+  - рабочий режим
+  - поработаем
+  - работа
+  path: no
+  ahkFile: workMode.ahk
+  sound: loading
+  action: no
+com6:
+  keyword:
+  - отдых
+  - отдохнуть
+  - режим отдыха
+  path: no
+  ahkFile: smileMode.ahk
+  sound: loading
+  action: no
+com7:
+  keyword:
+  - умница
+  - молодец
+  - спасибо
+  - крутой
+  - красавчик
+  path: no
+  ahkFile: no
+  sound: thanks
+  action: break
+com8:
+  keyword:
+  - тупой
+  - бесить
+  - ты дурак
+  - ишак
+  path: no
+  ahkFile: no
+  sound: stupid
+  action: no
+com9:
+  keyword:
+  - гит комит
+  - сохранись
+  - сохрани состояние
+  path: no
+  ahkFile: gitSave.ahk
+  sound: ok
+  action: exit
+#
+#
+#а тут будем просто открывать
+com1684807418.824743:
+  keyword:
+  - гугл хром
+  - браузер
+  path: C:/path_to_program\chrome.lnk
+  ahkFile: no
+  sound: no
+  action: start
+com1684807418.8247457:
+  keyword:
+  - бот
+  - бота
+  - моего бота
+  path: c:/path_to_program\bot.lnk
+  ahkFile: no
+  sound: request
+  action: start
+com1684808102.4092171:
+  keyword:
+  - ворд
+  - текстовый редактор
+  path: c:/path_to_program\word.lnk
+  ahkFile: no
+  sound: no
+  action: start
+com1684808784.1597812:
+  keyword:
+  - телеграм
+  - мессенджер
+  - чат
+  path: c:/Users\Jordan\AppData\Roaming\Telegram Desktop\Telegram.exe
+  ahkFile: no
+  sound: ok
+  action: start
+com1684870411.2864926:
+  keyword:
+  - командная строка
+  - cmd
+  path: c:/path_to_program\cmd.lnk
+  ahkFile: no
+  sound: no
+  action: start
+com1684881815.5580192:
+  keyword:
+  - редактор кода
+  - среда разработки
+  - среду для программирования
+  path: c:/path_to_program\vsCode.lnk
+  ahkFile: no
+  sound: no
+  action: start
+com1684881990.9662628:
+  keyword:
+  - дискорд
+  - видеозвонки
+  path: c:/path_to_program\discord.lnk
+  ahkFile: no
+  sound: no
+  action: start
+com1684882205.4698346:
+  keyword:
+  - гонки
+  - игра
+  - игру
+  - игрушку
+  - нид фор спид
+  path: c:/Program Files (x86)\Need for Speed Most Wanted\speed.exe
+  ahkFile: no
+  sound: loading
+  action: start
