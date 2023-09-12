@@ -1,3 +1,4 @@
 /mainvenv
 /__pycache__
 /models
+.env
