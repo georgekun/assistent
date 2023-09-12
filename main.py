@@ -1,32 +1,34 @@
-from classes import Porcupine, Vosk, Player,Record
-from classes import ChatCompletion, CommandExecute 
+import os
 import time
 
-# доброе утро
-Player.play("run")
-# vosk = Vosk.Vosk()
-porcupine= Porcupine.Porcupine()
-micro = Record.Record()
-micro.start()
-Player.play("ready",micro)
+from classes import Porcupine, Vosk, Player,Record
 
-while True:
-    if(porcupine.detectWord(micro.read())):
-        Player.play("yesSir",micro)
-        end = time.time() + 15
+
+
+def main():
+    # доброе утро
+    print(f"папка - {os.getcwd()}")
+    player = Player()
+    player.play("sound/run")
+
+    vosk = Vosk()
+    porcupine= Porcupine()
+    micro = Record()
+    
+    micro.start()
+    player.play("sound/ready",micro)
+    
+    while True:
+        # bufer = micro.read()
+        if(porcupine.detect_word(micro.read())):
+            player.play("sound/yesSir",micro)
+            end = time.time() + 15
         
-        # while end - time.time()>0:
-            # text = vosk.speechToText(micro.read())
-            # if text != None:
-            #     if text.startswith("скажи"):
-            #         micro.stop()
-            #         Player.play("request")
-            #         ChatCompletion.openaiResponse(text)
-            #         micro.start()
-            #     else:
-            #         startExe = time.time()
-            #         if not CommandExecute.execute(text,micro):
-            #             break
-            #         endExe = time.time()
-            #         print(f"Время = {endExe-startExe}") 
-   
+            while end - time.time()>0:
+                text = vosk.speech_to_text(micro.read())
+                # if not CommandExecute.execute(text,micro):
+                #     break
+            print("\nsleep")
+
+if __name__ == "__main__":
+    main()

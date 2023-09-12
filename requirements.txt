@@ -1,0 +1,17 @@
+certifi==2023.7.22
+cffi==1.15.1
+charset-normalizer==3.2.0
+idna==3.4
+pvporcupine==2.2.1
+pvrecorder==1.2.1
+pycparser==2.21
+pydub==0.25.1
+python-dotenv==1.0.0
+PyYAML==6.0.1
+rapidfuzz==3.2.0
+requests==2.31.0
+srt==3.5.3
+tqdm==4.66.1
+urllib3==2.0.4
+vosk==0.3.45
+websockets==11.0.3

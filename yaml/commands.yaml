@@ -1,12 +1,5 @@
 #будем тут прописывать команды? action= break, exit, start
-com0:
-  keyword:
-  - параметры
-  - настройки
-  path: no
-  ahkFile: setting.ahk
-  sound: loading
-  action: break
+
 com1:
   keyword:
   - перезагрузка
