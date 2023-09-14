@@ -1,20 +1,18 @@
 import os
 import time
 
-from classes import Porcupine, Vosk, Player,Record
-
+import classes
 
 
 def main():
-    # доброе утро
-    print(f"папка - {os.getcwd()}")
-    player = Player()
+    player = classes.Player()
     player.play("sound/run")
 
-    vosk = Vosk()
-    porcupine= Porcupine()
-    micro = Record()
-    
+    vosk = classes.Vosk()
+    porcupine= classes.Porcupine()
+    micro = classes.Record()
+    executer = classes.Executer()
+
     micro.start()
     player.play("sound/ready",micro)
     
@@ -26,8 +24,9 @@ def main():
         
             while end - time.time()>0:
                 text = vosk.speech_to_text(micro.read())
-                # if not CommandExecute.execute(text,micro):
-                #     break
+                if text:
+                    executer.execute(text,micro,player)
+                
             print("\nsleep")
 
 if __name__ == "__main__":

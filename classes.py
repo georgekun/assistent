@@ -4,7 +4,8 @@ import os
 import struct
 import json
 import yaml
-
+import random
+import subprocess
 
 # from pydub import playback, AudioSegment
 from rapidfuzz import fuzz
@@ -13,7 +14,8 @@ from dotenv import load_dotenv
 import pvporcupine
 import pvrecorder
 import vosk
-import pygame
+from pygame import mixer, time
+from pygame import init as pyInit
 import config
 
 load_dotenv()
@@ -24,7 +26,6 @@ class Record:
   def __init__(self):
     self.record = pvrecorder.PvRecorder(device_index=-1,frame_length=512)
     print("[info] Микрофон подключён.")
-
   def start(self):
     self.record.start()
 
@@ -36,7 +37,6 @@ class Record:
 
 
 class Vosk:
-
     def __init__(self):
         model = vosk.Model(config.vosk_model_path)
         self.kaldi = vosk.KaldiRecognizer(model,16000)
@@ -57,7 +57,7 @@ class Porcupine:
 
     def __init__(self):
       self.porcupine = pvporcupine.create(
-            access_key= os.getenv("porcupine_access"),
+            access_key= os.getenv("porcupine_key"),
             keyword_paths=["./models/porcupine/syrinx_en_linux_v2_2_0.ppn"],
             # keywords=["jarvis"],
             # model_path='./models/porcupine/porcupine_params_ru.pv',
@@ -74,68 +74,90 @@ class Porcupine:
 
 
 
-class Player():
+class Player:
+     #воспроизводит звук
     def __init__(self) -> None:
-        pass
-    #воспроизводит звук
-
+        pyInit()
+        print("[info] Player готов.")
+   
     def play(self,path,micro = None):
         if micro:
             micro.stop()
-
-        # path = f"{path}.wav"
-        # song = AudioSegment.from_wav(path)
-        # playback.play(song)
-        pygame.init()
-        # Создайте объект звука, загрузив WAV-файл
-        sound = pygame.mixer.Sound(f'{path}.wav')
-        # Воспроизведите звук
+        sound = mixer.Sound(f'{path}.wav')
         sound.play()
-        # Подождите, пока звук не закончится (если нужно)
         length = sound.get_length() * 1000
-        print(length)
-        pygame.time.wait(length)  # в миллисекундах
-        # Завершите Pygame (необязательно)
-        pygame.quit()
+        time.wait(int(length))  # в миллисекундах
         if micro:
             micro.start()
 
-def getNameScriptFromYaml(text):
-    with open("./yaml/commands.yaml",encoding="utf-8") as f:
-        data = yaml.safe_load(f)
-    maxScore = 0
-    for key,value  in data.items():
-        for k,p in value.items():
-            if k == "keyword":
-                for word in p:
-                    newScore = fuzz.partial_ratio(text,word)
-                    if newScore > maxScore and newScore>80:
-                        maxScore= newScore
-                        ahk = value["ahkFile"]
-                        sound = value["sound"]
-                        action = value["action"]
-                        path = value["path"]
-                        
-    if maxScore<70:
-        return False
-    return ahk,sound,action,path
 
-def execute(text,micro):#,micro
-    if(getNameScriptFromYaml(text)):
-        ahk,sound,action,path = getNameScriptFromYaml(text) 
-        # print(f"куда попал: {ahk}, {sound}, {action}, {path}\n")
-        if ahk != False:
-            path = os.path.abspath(f"./ahk/{ahk}")
-            os.startfile(path)
-        if sound != False:
-            Player.play(f"{sound}",micro)   
-        if action != False:
-            if action == "exit":
-                os._exit(0)
-            elif action == "break":
-                return False 
-            elif action == "start":
-                os.startfile(path)
-    else:
-        Player.play("not_found",micro)
-    return True
+
+
+
+class Executer:
+    def __init__(self) -> None:
+        """при инициализации будем брать все команды из yaml файлов и помещать их 
+        в словари, так будет быстрее, поскольку каждый раз не надо будет обращаться 
+        yaml и все читать еще раз
+        """
+        self.__bin_dict = dict()
+        self.__cmd_dict = dict()
+
+        try:
+            filename = "yaml/bin_apps.yaml"
+            with open(filename) as yf1:
+                data = yaml.safe_load(yf1)
+                for key, value in data.items():
+                    self.__bin_dict[key]=value
+        except FileNotFoundError:
+            print(f"файл {filename} не найден")
+
+    #основный метод 
+    def execute(self,text:str, micro:Record, player:Player):
+        name_dict, cur_dict = self.__controller(text)
+        value_in_dict = self.__best_match(text,cur_dict)
+        sounds = ["sound/ok", "sound/yesSir","sound/loading"]
+        cur_sound = random.choice(sounds)
+
+        if name_dict == "bin":
+            player.play(cur_sound,micro)
+            try:
+                os.open("/home/jordan/Telegram")
+            except:
+                print("\n[error] не удалось открыть программу")
+        if name_dict == "cmd":
+            pass
+
+    #определяет тип команды в самом начале (bin, cmd, None)
+    def __controller(self,text:str)->tuple[str,dict]:
+        list_word  = text.split()
+        words_open_apps = ["открой", "запусти" , "открыть" , "запустить"]
+        
+        for word in list_word:
+            if word in words_open_apps:
+                return "bin" , self.__bin_dict
+            
+        return "cmd", self.__cmd_dict
+    
+
+    def __best_match(self,text:str,current_dict:dict)->str:
+        if not current_dict:
+            current_dict = self.__bin_dict
+        # проходим по словарю и получаем наилучшее совпадение
+        best_result = ""
+        percent_match = 70
+
+        for keyword in current_dict:
+            new_percent = fuzz.partial_ratio(text,keyword)
+            if new_percent>percent_match:
+                percent_match = new_percent
+                best_result = keyword
+            if new_percent >=90: # чтоб по всем не проходил каждый раз
+                break
+
+        if best_result:
+            return current_dict[best_result]
+        
+        return "Not Found"
+    
+    

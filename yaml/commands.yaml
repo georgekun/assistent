@@ -42,6 +42,7 @@ com5:
   ahkFile: workMode.ahk
   sound: loading
   action: no
+
 com6:
   keyword:
   - отдых
@@ -92,15 +93,7 @@ com1684807418.824743:
   ahkFile: no
   sound: no
   action: start
-com1684807418.8247457:
-  keyword:
-  - бот
-  - бота
-  - моего бота
-  path: c:/path_to_program\bot.lnk
-  ahkFile: no
-  sound: request
-  action: start
+
 com1684808102.4092171:
   keyword:
   - ворд
@@ -108,49 +101,4 @@ com1684808102.4092171:
   path: c:/path_to_program\word.lnk
   ahkFile: no
   sound: no
-  action: start
-com1684808784.1597812:
-  keyword:
-  - телеграм
-  - мессенджер
-  - чат
-  path: c:/Users\Jordan\AppData\Roaming\Telegram Desktop\Telegram.exe
-  ahkFile: no
-  sound: ok
-  action: start
-com1684870411.2864926:
-  keyword:
-  - командная строка
-  - cmd
-  path: c:/path_to_program\cmd.lnk
-  ahkFile: no
-  sound: no
-  action: start
-com1684881815.5580192:
-  keyword:
-  - редактор кода
-  - среда разработки
-  - среду для программирования
-  path: c:/path_to_program\vsCode.lnk
-  ahkFile: no
-  sound: no
-  action: start
-com1684881990.9662628:
-  keyword:
-  - дискорд
-  - видеозвонки
-  path: c:/path_to_program\discord.lnk
-  ahkFile: no
-  sound: no
-  action: start
-com1684882205.4698346:
-  keyword:
-  - гонки
-  - игра
-  - игру
-  - игрушку
-  - нид фор спид
-  path: c:/Program Files (x86)\Need for Speed Most Wanted\speed.exe
-  ahkFile: no
-  sound: loading
   action: start
