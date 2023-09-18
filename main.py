@@ -26,7 +26,7 @@ def main():
                 text = vosk.speech_to_text(micro.read())
                 if text:
                     executer.execute(text,micro,player)
-                
+
             print("\nsleep")
 
 if __name__ == "__main__":

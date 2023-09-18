@@ -54,7 +54,6 @@ class Vosk:
 
 
 class Porcupine:
-
     def __init__(self):
       self.porcupine = pvporcupine.create(
             access_key= os.getenv("porcupine_key"),
@@ -73,7 +72,6 @@ class Porcupine:
           return False
 
 
-
 class Player:
      #воспроизводит звук
     def __init__(self) -> None:
@@ -89,9 +87,6 @@ class Player:
         time.wait(int(length))  # в миллисекундах
         if micro:
             micro.start()
-
-
-
 
 
 class Executer:
@@ -144,6 +139,7 @@ class Executer:
         if not current_dict:
             current_dict = self.__bin_dict
         # проходим по словарю и получаем наилучшее совпадение
+        
         best_result = ""
         percent_match = 70
 
