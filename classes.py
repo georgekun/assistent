@@ -4,8 +4,9 @@ import os
 import struct
 import json
 import yaml
-import random
-import subprocess
+from random import choice
+from subprocess import run as process
+
 
 # from pydub import playback, AudioSegment
 from rapidfuzz import fuzz
@@ -25,7 +26,7 @@ class Record:
   
   def __init__(self):
     self.record = pvrecorder.PvRecorder(device_index=-1,frame_length=512)
-    print("[info] Микрофон подключён.")
+    # print("[info] Микрофон подключён.")
   def start(self):
     self.record.start()
 
@@ -40,7 +41,7 @@ class Vosk:
     def __init__(self):
         model = vosk.Model(config.vosk_model_path)
         self.kaldi = vosk.KaldiRecognizer(model,16000)
-        print("[info] VOSK готов.")
+        # print("[info] VOSK готов.")
     
     def speech_to_text(self,pcm):
         struct_pcm = struct.pack("h" * len(pcm), *pcm)  
@@ -62,7 +63,7 @@ class Porcupine:
             # model_path='./models/porcupine/porcupine_params_ru.pv',
             sensitivities=[config.sensitiviti_porcupine])
 
-      print("[info] Поркупине готов.")
+    #   print("[info] Поркупине готов.")
   
     def detect_word(self,pcm):
         index = self.porcupine.process(pcm)
@@ -76,15 +77,18 @@ class Player:
      #воспроизводит звук
     def __init__(self) -> None:
         pyInit()
-        print("[info] Player готов.")
+        # print("[info] Player готов.")
    
     def play(self,path,micro = None):
         if micro:
             micro.stop()
-        sound = mixer.Sound(f'{path}.wav')
-        sound.play()
-        length = sound.get_length() * 1000
-        time.wait(int(length))  # в миллисекундах
+        try:    
+            sound = mixer.Sound(f'{path}.wav')
+            sound.play()
+            length = sound.get_length() * 1000
+            time.wait(int(length))  # в миллисекундах
+        except FileNotFoundError:
+            print("[error] Файл музыки не найден")
         if micro:
             micro.start()
 
@@ -105,23 +109,53 @@ class Executer:
                 for key, value in data.items():
                     self.__bin_dict[key]=value
         except FileNotFoundError:
-            print(f"файл {filename} не найден")
+            print(f"[error] Файл {filename} не найден")
+
+        try:
+            filename = "yaml/commands.yaml"
+            with open(filename) as yf2:
+                data = yaml.safe_load(yf2)
+                for key, value in data.items():
+                    self.__cmd_dict[key]=value
+
+        except FileNotFoundError:
+            print(f"[error] Файл {filename} не найден")
 
     #основный метод 
     def execute(self,text:str, micro:Record, player:Player):
         name_dict, cur_dict = self.__controller(text)
+
         value_in_dict = self.__best_match(text,cur_dict)
+        print()
+        print(name_dict)
+        print(value_in_dict)
+        if not value_in_dict:
+            player.play("sound/not_found",micro)
+            return True
+        
         sounds = ["sound/ok", "sound/yesSir","sound/loading"]
-        cur_sound = random.choice(sounds)
+        cur_sound = choice(sounds)
 
         if name_dict == "bin":
             player.play(cur_sound,micro)
+            
+          
             try:
-                os.open("/home/jordan/Telegram")
-            except:
-                print("\n[error] не удалось открыть программу")
+                process(["flatpak","run", value_in_dict]) # запуск приложения
+                return True
+            except FileNotFoundError:
+                print("\n[error] Не удалось найти программу")
+                return True
+            except PermissionError:
+                print("\n[error] Отказано в доступе.")   
+                return
+        
         if name_dict == "cmd":
-            pass
+            match value_in_dict:
+                case "break":
+                    player.play("sound/ok",micro)
+                    return 
+                
 
     #определяет тип команды в самом начале (bin, cmd, None)
     def __controller(self,text:str)->tuple[str,dict]:
@@ -153,7 +187,4 @@ class Executer:
 
         if best_result:
             return current_dict[best_result]
-        
-        return "Not Found"
-    
-    
+        return 

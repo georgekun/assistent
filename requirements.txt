@@ -6,6 +6,7 @@ pvporcupine==2.2.1
 pvrecorder==1.2.1
 pycparser==2.21
 pydub==0.25.1
+pygame==2.5.2
 python-dotenv==1.0.0
 PyYAML==6.0.1
 rapidfuzz==3.2.0

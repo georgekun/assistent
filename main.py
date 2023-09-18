@@ -1,6 +1,5 @@
-import os
-import time
 
+import time
 import classes
 
 
@@ -25,7 +24,8 @@ def main():
             while end - time.time()>0:
                 text = vosk.speech_to_text(micro.read())
                 if text:
-                    executer.execute(text,micro,player)
+                    if not executer.execute(text,micro,player):
+                        break
 
             print("\nsleep")
 

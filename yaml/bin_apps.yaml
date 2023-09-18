@@ -1,5 +1,4 @@
-браузер: ""
-телеграм: "/home/jordan/Telegram"
+браузер: "com.google.Chrome"
+телеграм: "org.telegram.desktop"
 командная строка: ""
-среда разработки: ""
-гугл хром: ""
+среда разработки: "com.visualstudio.code"
