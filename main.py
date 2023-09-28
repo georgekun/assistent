@@ -5,7 +5,7 @@ import classes
 
 def main():
     player = classes.Player()
-    player.play("sound/run")
+    player.play("sound/run.wav")
 
     vosk = classes.Vosk()
     porcupine= classes.Porcupine()
@@ -13,12 +13,12 @@ def main():
     executer = classes.Executer()
 
     micro.start()
-    player.play("sound/ready",micro)
+    player.play("sound/ready.wav",micro)
     
     while True:
         # bufer = micro.read()
         if(porcupine.detect_word(micro.read())):
-            player.play("sound/yesSir",micro)
+            player.play("sound/yesSir.wav",micro)
             end = time.time() + 15
         
             while end - time.time()>0:

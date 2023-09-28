@@ -7,8 +7,6 @@ import yaml
 from random import choice
 from subprocess import run as process
 
-
-# from pydub import playback, AudioSegment
 from rapidfuzz import fuzz
 from dotenv import load_dotenv
 
@@ -17,10 +15,13 @@ import pvrecorder
 import vosk
 from pygame import mixer, time
 from pygame import init as pyInit
+import pyautogui
+
 import config
 
-load_dotenv()
 
+
+load_dotenv()
 
 class Record:
   
@@ -83,7 +84,7 @@ class Player:
         if micro:
             micro.stop()
         try:    
-            sound = mixer.Sound(f'{path}.wav')
+            sound = mixer.Sound(path)
             sound.play()
             length = sound.get_length() * 1000
             time.wait(int(length))  # в миллисекундах
@@ -124,39 +125,31 @@ class Executer:
     #основный метод 
     def execute(self,text:str, micro:Record, player:Player):
         name_dict, cur_dict = self.__controller(text)
-
         value_in_dict = self.__best_match(text,cur_dict)
-        print()
-        print(name_dict)
-        print(value_in_dict)
+
         if not value_in_dict:
-            player.play("sound/not_found",micro)
+            player.play("sound/not_found.wav",micro)
             return True
         
-        sounds = ["sound/ok", "sound/yesSir","sound/loading"]
+        sounds = ["sound/ok.wav", "sound/yesSir.wav","sound/loading.wav"]
         cur_sound = choice(sounds)
 
         if name_dict == "bin":
-            player.play(cur_sound,micro)
-            
-          
-            try:
-                process(["flatpak","run", value_in_dict]) # запуск приложения
-                return True
-            except FileNotFoundError:
-                print("\n[error] Не удалось найти программу")
-                return True
-            except PermissionError:
-                print("\n[error] Отказано в доступе.")   
-                return
+           return self.__process_bin(
+               value_in_dict=value_in_dict,
+                player=player,
+                micro=micro,
+                cur_sound=cur_sound
+           )
         
         if name_dict == "cmd":
-            match value_in_dict:
-                case "break":
-                    player.play("sound/ok",micro)
-                    return 
-                
-
+            return self.__process_cmd(
+                value_in_dict=value_in_dict,
+                player=player,
+                micro=micro
+                )
+    
+            
     #определяет тип команды в самом начале (bin, cmd, None)
     def __controller(self,text:str)->tuple[str,dict]:
         list_word  = text.split()
@@ -169,11 +162,12 @@ class Executer:
         return "cmd", self.__cmd_dict
     
 
+    #находит наилучшее совпадение в словаре
     def __best_match(self,text:str,current_dict:dict)->str:
         if not current_dict:
             current_dict = self.__bin_dict
         # проходим по словарю и получаем наилучшее совпадение
-        
+
         best_result = ""
         percent_match = 70
 
@@ -188,3 +182,59 @@ class Executer:
         if best_result:
             return current_dict[best_result]
         return 
+
+
+      # выполняет команды из файла bin_apps.yaml          
+    def __process_bin(self,value_in_dict,player:Player,micro:Record, cur_sound:str):
+        player.play(cur_sound,micro)
+        try:
+            process(["flatpak","run", value_in_dict]) # запуск приложения
+            return True
+        except FileNotFoundError:
+            print("\n[error] Не удалось найти программу")
+            return True
+        except PermissionError:
+            print("\n[error] Отказано в доступе. Запустите с правами администратора.")   
+            return
+    
+
+    # выполняет команды из файла commands.yaml
+    def __process_cmd(self,value_in_dict,player:Player,micro:Record):
+          match value_in_dict:
+                case "break":
+                    player.play("sound/ok.wav",micro)
+                    return 
+                case "sleep":
+                    return
+                case "thanks":
+                    player.play("sound/thanks.wav",micro)
+                    return
+                case "write":
+                    pass
+                case "exit":
+                    os._exit(0)
+                case "space": 
+                    # эти кнопки нажимаются по одному разу
+                    self.keymouse_remote(name_key=value_in_dict)
+                    return True
+
+
+    #Эта функция будет писать вместо меня
+    #но сначала хорошо бы остановить предыдущий микрофоно чтобы не смешивалось
+     
+        
+    def keymouse_remote(self,name_key="",
+                        count:int=None, 
+                        c_x:int = None,
+                        c_y:int = None, 
+                        ):
+        gui = pyautogui
+        if name_key:
+            if count:
+                gui.press(name_key,presses=count)
+                return 
+            else:
+                gui.press(name_key)
+                return
+        
+        
