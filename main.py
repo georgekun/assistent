@@ -19,7 +19,7 @@ def main():
         # bufer = micro.read()
         if(porcupine.detect_word(micro.read())):
             player.play("sound/yesSir.wav",micro)
-            end = time.time() + 5
+            end = time.time() + 20
             
             while end - time.time()>0:
                 print(f"{end-time.time()}")

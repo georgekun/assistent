@@ -177,12 +177,9 @@ class Executer:
             return current_dict[best_result]
         return 
 
-
-
-      # выполняет команды из файла bin_apps.yaml          
     
 
-    # выполняет команды из файла bin.yaml
+     # выполняет команды из файла bin_apps.yaml   
     def __process_bin(self,value_in_dict, cur_sound:str):
         self.player.play(cur_sound,self.micro)
         try:
