@@ -3,6 +3,8 @@
 import os
 import struct
 import json
+from time import time as clock_time
+
 import yaml
 from random import choice
 from subprocess import run as process
@@ -24,18 +26,16 @@ import config
 load_dotenv()
 
 class Record:
-  
-  def __init__(self):
-    self.record = pvrecorder.PvRecorder(device_index=-1,frame_length=512)
+    def __init__(self):
+        self.record = pvrecorder.PvRecorder(device_index=-1,frame_length=512)
     # print("[info] Микрофон подключён.")
-  def start(self):
-    self.record.start()
-
-  def stop(self):
-    self.record.stop()
-
-  def read(self):
-    return self.record.read()
+    def start(self):
+        self.record.start()
+    def stop(self):
+        self.record.stop()
+        
+    def read(self):
+        return self.record.read()
 
 
 class Vosk:
@@ -50,9 +50,9 @@ class Vosk:
             letter = json.loads(self.kaldi.Result())["text"]
 
             if(len(letter)>3):
-                print(f"\rРаспознано:{letter}", end="")
+                print("\rРаспознано: ",end="")
+                print(f"{letter}", end=" ")
                 return letter
-
 
 
 class Porcupine:
@@ -72,7 +72,6 @@ class Porcupine:
           return True
         else: 
           return False
-
 
 class Player:
      #воспроизводит звук
@@ -95,13 +94,16 @@ class Player:
 
 
 class Executer:
-    def __init__(self) -> None:
+    def __init__(self, vosk:Vosk, micro:Record, player:Player) -> None:
         """при инициализации будем брать все команды из yaml файлов и помещать их 
         в словари, так будет быстрее, поскольку каждый раз не надо будет обращаться 
         yaml и все читать еще раз
         """
         self.__bin_dict = dict()
         self.__cmd_dict = dict()
+        self.vosk = vosk
+        self.micro = micro
+        self.player = player
 
         try:
             filename = "yaml/bin_apps.yaml"
@@ -123,31 +125,23 @@ class Executer:
             print(f"[error] Файл {filename} не найден")
 
     #основный метод 
-    def execute(self,text:str, micro:Record, player:Player):
+    def execute(self,text:str):
         name_dict, cur_dict = self.__controller(text)
         value_in_dict = self.__best_match(text,cur_dict)
 
         if not value_in_dict:
-            player.play("sound/not_found.wav",micro)
+            self.player.play("sound/not_found.wav",self.micro)
             return True
         
         sounds = ["sound/ok.wav", "sound/yesSir.wav","sound/loading.wav"]
         cur_sound = choice(sounds)
 
+        print(f"\nvalue in files {name_dict} = {value_in_dict}")
         if name_dict == "bin":
-           return self.__process_bin(
-               value_in_dict=value_in_dict,
-                player=player,
-                micro=micro,
-                cur_sound=cur_sound
-           )
+           return self.__process_bin(value_in_dict=value_in_dict,cur_sound=cur_sound)
         
         if name_dict == "cmd":
-            return self.__process_cmd(
-                value_in_dict=value_in_dict,
-                player=player,
-                micro=micro
-                )
+            return self.__process_cmd(value_in_dict=value_in_dict)
     
             
     #определяет тип команды в самом начале (bin, cmd, None)
@@ -184,9 +178,13 @@ class Executer:
         return 
 
 
+
       # выполняет команды из файла bin_apps.yaml          
-    def __process_bin(self,value_in_dict,player:Player,micro:Record, cur_sound:str):
-        player.play(cur_sound,micro)
+    
+
+    # выполняет команды из файла bin.yaml
+    def __process_bin(self,value_in_dict, cur_sound:str):
+        self.player.play(cur_sound,self.micro)
         try:
             process(["flatpak","run", value_in_dict]) # запуск приложения
             return True
@@ -199,15 +197,15 @@ class Executer:
     
 
     # выполняет команды из файла commands.yaml
-    def __process_cmd(self,value_in_dict,player:Player,micro:Record):
+    def __process_cmd(self,value_in_dict):
           match value_in_dict:
                 case "break":
-                    player.play("sound/ok.wav",micro)
+                    self.player.play("sound/ok.wav",self.micro)
                     return 
                 case "sleep":
                     return
                 case "thanks":
-                    player.play("sound/thanks.wav",micro)
+                    self.player.play("sound/thanks.wav",self.micro)
                     return
                 case "write":
                     pass
@@ -217,12 +215,53 @@ class Executer:
                     # эти кнопки нажимаются по одному разу
                     self.keymouse_remote(name_key=value_in_dict)
                     return True
+              
+                case "writeme":
+                    self.write_for_me()
+                    return True 
+                case "language":
+                    pyautogui.keyDown("alt")
+                    pyautogui.press("shift")
+                    pyautogui.keyUp("alt")
+                    return True
 
-
+                case _:
+                    self.keymouse_remote(value_in_dict,10)
+                    return True
+              
     #Эта функция будет писать вместо меня
     #но сначала хорошо бы остановить предыдущий микрофоно чтобы не смешивалось
      
+    def write_for_me(self):
+        """ебаный костыль для кирилицы"""
+        def translate(key):
+            
+            qwerty = "qwertyuiop[]asdfghjkl;'zxcvbnm,."
+            ycuken = "йцукенгшщзхъфывапролджэячсмитьбю"
+            # join as keys and values
+            tr = dict(zip(ycuken, qwerty))
+
+            """Returns qwerty key or the given key itself if no mapping found"""
+            return "".join(map(lambda x: tr.get(x.lower(), x),key))
         
+        
+        self.player.play("sound/ok.wav",self.micro)
+        gui = pyautogui
+
+        while True:
+            text_for_write =  self.vosk.speech_to_text(self.micro.read())
+            if not text_for_write:
+                continue
+            if text_for_write=="хватит":
+                return
+            if text_for_write == "отправь":
+
+                pyautogui.press("enter")
+                return
+            else:
+                gui.write(message=translate(text_for_write))
+                gui.press("space")
+
     def keymouse_remote(self,name_key="",
                         count:int=None, 
                         c_x:int = None,
@@ -230,11 +269,15 @@ class Executer:
                         ):
         gui = pyautogui
         if name_key:
-            if count:
-                gui.press(name_key,presses=count)
-                return 
+            if name_key == "right" or name_key == "left":
+                count = 1
+                gui.press(name_key,presses=1)
             else:
-                gui.press(name_key)
-                return
+                if count:
+                    gui.press(name_key,presses=count)
+                    return 
+                else:
+                    gui.press(name_key)
+                    return
         
         
